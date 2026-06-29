@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management System</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+            --warning-color: #d97706;
+            --text-main: #1f2937;
+            --bg-main: #f3f4f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .app-container {
+            max-width: 1000px;
+            margin: 30px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #111827;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: end;
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        input, select {
+            padding: 10px;
+            font-size: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-submit { background-color: var(--primary-color); }
+        .btn-submit:hover { background-color: var(--primary-hover); }
+        
+        .btn-edit { background-color: var(--warning-color); color: white; padding: 6px 12px; font-size: 13px;}
+        .btn-edit:hover { background-color: #b45309; }
+
+        .btn-delete { background-color: var(--danger-color); padding: 6px 12px; font-size: 13px;}
+        .btn-delete:hover { background-color: #b91c1c; }
+
+        .btn-cancel { background-color: #6b7280; }
+        .btn-cancel:hover { background-color: #4b5563; }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background-color: #f9fafb;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        tr:hover { background-color: #f9fafb; }
+        
+        .empty-row {
+            text-align: center;
+            color: #9ca3af;
+            padding: 30px;
+        }
+
+        .badge-gender {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .gender-male { background: #dbeafe; color: #1e40af; }
+        .gender-female { background: #fce7f3; color: #9d174d; }
+        .gender-other { background: #e2e8f0; color: #475569; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <h2>Employee Management System - Console</h2>
+    
+    <!-- CRUD Operations Input Block -->
+    <form id="employeeForm">
+        <input type="hidden" id="empId">
+        <div class="form-group">
+            <div class="input-box">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" required placeholder="John Doe">
+            </div>
+            <div class="input-box">
+                <label for="age">Age</label>
+                <input type="number" id="age" required min="18" max="100" placeholder="28">
+            </div>
+            <div class="input-box">
+                <label for="gender">Gender</label>
+                <select id="gender" required>
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="input-box">
+                <label for="salary">Monthly Salary (₹)</label>
+                <input type="number" id="salary" required min="0" placeholder="50000">
+            </div>
+            <div class="input-box">
+                <label for="bloodGroup">Blood Group</label>
+                <input type="text" id="bloodGroup" required placeholder="O+ / A-">
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" id="cancelBtn" class="btn-cancel" style="display: none;" onclick="resetFormState()">Cancel</button>
+            <button type="submit" id="submitBtn" class="btn-submit">Add Employee</button>
+        </div>
+    </form>
+
+    <!-- Real-Time Data Grid -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Salary</th>
+                    <th>Blood Group</th>
+                    <th style="width: 150px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="employeeTableBody">
+                <!-- Fallback when array is empty -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Live In-Browser State Management (Mimics Production APIs)
+    let employees = JSON.parse(localStorage.getItem('el_employees')) || [
+        { id: 1, name: "Arun Kumar", age: 29, gender: "Male", salary: 65000, bloodGroup: "O+" },
+        { id: 2, name: "Priya Sharma", age: 26, gender: "Female", salary: 72000, bloodGroup: "B+" }
+    ];
+
+    const form = document.getElementById('employeeForm');
+    const tableBody = document.getElementById('employeeTableBody');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    // Init Render
+    renderRecords();
+
+    function renderRecords() {
+        // LocalStorage sync
+        localStorage.setItem('el_employees', JSON.stringify(employees));
+        
+        if (employees.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" class="empty-row">No records found. Add an employee to populate data.</td></tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = '';
+        employees.forEach(emp => {
+            const genderClass = `gender-${emp.gender.toLowerCase()}`;
+            tableBody.innerHTML += `
+                <tr>
+                    <td style="font-weight: 500;">${escapeHtml(emp.name)}</td>
+                    <td>${emp.age}</td>
+                    <td><span class="badge-gender ${genderClass}">${emp.gender}</span></td>
+                    <td>₹${Number(emp.salary).toLocaleString('en-IN')}</td>
+                    <td style="font-weight: 600; color: #374151;">${escapeHtml(emp.bloodGroup.toUpperCase())}</td>
+                    <td>
+                        <button class="btn-edit" onclick="initiateEdit(${emp.id})">Edit</button>
+                        <button class="btn-delete" onclick="terminateRecord(${emp.id})">Delete</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    // CREATE & UPDATE Core Controller
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const id = document.getElementById('empId').value;
+        const payload = {
+            name: document.getElementById('name').value.trim(),
+            age: parseInt(document.getElementById('age').value),
+            gender: document.getElementById('gender').value,
+            salary: parseFloat(document.getElementById('salary').value),
+            bloodGroup: document.getElementById('bloodGroup').value.trim()
+        };
+
+        if (id) {
+            // Update Flow
+            const index = employees.findIndex(e => e.id == id);
+            if (index !== -1) {
+                employees[index] = { id: parseInt(id), ...payload };
+            }
+        } else {
+            // Insert Flow
+            const newId = employees.length > 0 ? Math.max(...employees.map(e => e.id)) + 1 : 1;
+            employees.push({ id: newId, ...payload });
+        }
+
+        resetFormState();
+        renderRecords();
+    });
+
+    // Populate Fields for Update
+    function initiateEdit(id) {
+        const emp = employees.find(e => e.id === id);
+        if (!emp) return;
+
+        document.getElementById('empId').value = emp.id;
+        document.getElementById('name').value = emp.name;
+        document.getElementById('age').value = emp.age;
+        document.getElementById('gender').value = emp.gender;
+        document.getElementById('salary').value = emp.salary;
+        document.getElementById('bloodGroup').value = emp.bloodGroup;
+
+        submitBtn.innerText = "Update Record";
+        cancelBtn.style.display = "inline-block";
+        document.getElementById('name').focus();
+    }
+
+    // DELETE Action
+    function terminateRecord(id) {
+        if (confirm("Are you sure you want to permanently delete this employee record?")) {
+            employees = employees.filter(e => e.id !== id);
+            if (document.getElementById('empId').value == id) resetFormState();
+            renderRecords();
+        }
+    }
+
+    function resetFormState() {
+        form.reset();
+        document.getElementById('empId').value = '';
+        submitBtn.innerText = "Add Employee";
+        cancelBtn.style.display = "none";
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+</script>
+</body>
+</html>
